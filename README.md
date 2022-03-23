@@ -1,42 +1,127 @@
-# TOPIC: Middleware2
+# Thorium
 
-## Authentication with JWT
-- Token generation
-- Token verification
+## Open to Intern Project Requirement
 
-## Assignment
-- For this assignment you have to create a new branch - **assignment/auth-3**
-- Your user document should look like this
+### Key points
+- Create a group database `groupXDatabase`. You can clean the db you previously used and resue that.
+- This time each group should have a *single git branch*. Coordinate amongst yourselves by ensuring every next person pulls the code last pushed by a team mate. You branch will be checked as part of the demo. Branch name should follow the naming convention `project/internshipGroupX`
+- Follow the naming conventions exactly as instructed. The backend code will be integrated with the front-end application which means any mismatch in the expected request body will lead to failure in successful integration.
+
+### Models
+- College Model
 ```
- 	{
-    "_id" : ObjectId("6226e3d2b98f22b349ca58be"),
-    "firstName" : "Sabiha",
-    "lastName" : "Khan",
-    "mobile" : "9898909087",
-    "emailId" : "sk@gmail.com",
-    "password" : "password123",
-    "gender" : "female",
-	"isDeleted": false, //default value is false 
-    "age" : 12,
-    "createdAt" : ISODate("2022-03-08T05:04:18.737Z"),
-    "updatedAt" : ISODate("2022-03-08T05:04:18.737Z"),
-    "__v" : 0
+{ name: { mandatory, unique, example iith}, fullName: {mandatory, example `Indian Institute of Technology, Hyderabad`}, logoLink: {mandatory}, isDeleted: {boolean, default: false} }
+```
+- Intern Model
+```
+{ name: {mandatory}, email: {mandatory, valid email, unique}, mobile: {mandatory, valid mobile number, unique}, collegeId: {ObjectId, ref to college model, isDeleted: {boolean, default: false}}
+```
+
+### POST /functionup/colleges
+- Create a college - a document for each member of the group
+- The logo link will be provided to you by the mentors. This link is a s3 (Amazon's Simple Service) url. Try accessing the link to see if the link is public or not.
+
+  `Endpoint: BASE_URL/functionup/colleges`
+
+### POST /functionup/interns
+- Create a document for an intern. 
+- Also save the collegeId along with the document. Your request body contains the following fields - { name, mobile, email, collegeName}
+- Return HTTP status 201 on a succesful document creation. Also return the document. The response should be a JSON object like [this](#successful-response-structure) 
+
+- Return HTTP status 400 for an invalid request with a response body like [this](#error-response-structure)
+
+### GET /functionup/collegeDetails
+- Returns the college details for the requested college (Expect a query parameter by the name `collegeName`. This is anabbreviated college name. For example `iith`)
+- Returns the list of all interns who have applied for internship at this college.
+- The response structure should look like [this](#college-details)
+
+
+## Testing 
+- To test these apis create a new collection in Postman named Project 2 Internship
+- Each api should have a new request in this collection
+- Each request in the collection should be rightly named. Eg Create college, Get college details etc
+- Each member of each team should have their tests in running state
+
+
+Refer below sample
+
+ ![A Postman collection and request sample](assets/Postman-collection-sample.png)
+
+## Response
+
+### Successful Response structure
+```yaml
+{
+  status: true,
+  data: {
+
+  }
+}
+```
+### Error Response structure
+```yaml
+{
+  status: false,
+  message: ""
 }
 ```
 
+## Collections samples
 
-- Write a POST api to register a user from the user details in request body. 
-- Write a POST api to login a user that takes user details like email and password from the request body. If the credentials don't match with any user's data return a suitable error.
-On successful login, generate a JWT token and return it both in response body.
-- Write a GET api to fetch user details. Pass the userId as path param in the url. Check that request must contain x-auth-token header. If absent, return a suitable error.
-If present, check that the token is valid.
-- Write a PUT api to update user details. Pass the userId as path param in the url and update the attributes received in the reauest body. Check that request must contain x-auth-token header. If absent, return a suitable error.
-- Write a DELETE api that takes the userId in the path params and marks the isDeleted attribute for a user as true. Check that request must contain x-auth-token header. If absent, return a suitable error.
-- Once, all the apis are working fine, move the authentication related code in a middleware called auth.js
-- Add this middleware at route level in the routes where applicale.
+#### College
+```yaml
+{
+    "name" : "iith",
+    "fullName" : "Indian Institute of Technology, Hyderabad",
+    "logoLink" : "https://functionup.s3.ap-south-1.amazonaws.com/colleges/iith.png",
+    "isDeleted" : false
+}
+```
+#### Intern
+```yaml
+   {
+    "isDeleted" : false,
+    "name" : "Jane Does",
+    "email" : "jane.doe@iith.in",
+    "mobile" : "90000900000",
+    "collegeId" : ObjectId("888771129c9ea621dc7f5e3b")
+}
+```
+## Response samples
 
-```diff
-+ Please note that you have to also write the logic for authorisation so that a logged in user can only modify or fetch their own data.
-
-``` 
-
+### College details
+```yaml
+{
+  "data": {
+    "name": "xyz",
+    "fullName": "Some Institute of Engineering and Technology",
+    "logoLink": "some public s3 link for a college logo",
+    "interests": [
+      {
+        "_id": "123a47301a53ecaeea02be59",
+        "name": "Jane Doe",
+        "email": "jane.doe@miet.ac.in",
+        "mobile": "8888888888"
+      },
+      {
+        "_id": "45692c0e1a53ecaeea02b1ac",
+        "name": "John Doe",
+        "email": "john.doe@miet.ac.in",
+        "mobile": "9999999999"
+      },
+      {
+        "_id": "7898d0251a53ecaeea02a623",
+        "name": "Sukruti",
+        "email": "dummy.email@miet.ac.in",
+        "mobile": "9191919191"
+      },
+      {
+        "_id": "999803da1a53ecaeea02a07e",
+        "name": "Neeraj Kumar",
+        "email": "another.example@miet.ac.in",
+        "mobile": "9898989898"
+      }
+    ]
+  }
+}
+```
